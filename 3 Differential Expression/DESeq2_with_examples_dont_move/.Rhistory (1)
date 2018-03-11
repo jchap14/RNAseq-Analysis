@@ -1,0 +1,9 @@
+y <- read.delim('raw_counts.matrix.txt', quote='')
+y$X <- make.names(y$X, unique = TRUE); rownames(y) <- y$X; y$X = NULL
+View(y)
+#################################################################################################
+######################### Differential Expression testing with DEseq2 ###########################
+#source("http://bioconductor.org/biocLite.R")
+y <- read.delim('raw_counts.matrix.txt', quote='')
+y$X <- make.names(y$X, unique = TRUE); rownames(y) <- y$X; y$X = NULL
+View(y)
