@@ -7,8 +7,8 @@
 
 ## set variable names
 read1=`echo $1` #gzipped fastq file for read1
-name=`basename $1 .trim.R1.fq.gz` #for trimmed
-read2=$name.trim.R2.fq.gz #gzipped fq file for read2, use "" if single-end
+NAME=`basename $1 .trim.R1.fq.gz` #for trimmed
+read2=$NAME.trim.R2.fq.gz #gzipped fq file for read2, use "" if single-end
 
 ## add required modules
 module add STAR
@@ -61,7 +61,7 @@ RSEMparRun=" -p $nThreadsRSEM "
 RSEMparType="--paired-end --forward-prob 0"
       
 ## put the STAR & RSEM commands here ##
-cat > $name.tempscript.sh << EOF
+cat > $NAME.tempscript.sh << EOF
 #!/bin/bash -l
 #SBATCH --job-name $NAME.STAR_RSEM
 #SBATCH --output=$NAME.STAR_RSEM.out
@@ -75,8 +75,8 @@ cat > $name.tempscript.sh << EOF
 #SBATCH --export=ALL
 #SBATCH --account=mpsnyder
 
-mkdir $name
-cd $name
+mkdir $NAME
+cd $NAME
 
 # output: all in the working directory, fixed names
 # Aligned.sortedByCoord.out.bam                 # alignments, standard sorted BAM, agreed upon formatting
@@ -97,8 +97,8 @@ $STAR $STARparCommon $STARparRun $STARparBAM $STARparStrand
 echo "STARTING STAR bedGraph generation"
 mkdir Signal
 
-echo $STAR --runMode inputAlignmentsFromBAM --inputBAMfile $name.Aligned.sortedByCoord.out.bam --outWigType bedGraph $STARparWig --outFileNamePrefix ./Signal/ --outWigReferencesPrefix chr
-$STAR --runMode inputAlignmentsFromBAM --inputBAMfile $name.Aligned.sortedByCoord.out.bam --outWigType bedGraph $STARparWig --outFileNamePrefix ./Signal/ --outWigReferencesPrefix chr
+echo $STAR --runMode inputAlignmentsFromBAM --inputBAMfile $NAME.Aligned.sortedByCoord.out.bam --outWigType bedGraph $STARparWig --outFileNamePrefix ./Signal/ --outWigReferencesPrefix chr
+$STAR --runMode inputAlignmentsFromBAM --inputBAMfile $NAME.Aligned.sortedByCoord.out.bam --outWigType bedGraph $STARparWig --outFileNamePrefix ./Signal/ --outWigReferencesPrefix chr
 
 # move the signal files from the subdirectory
 echo "move the signal files from the subdirectory"
@@ -127,30 +127,30 @@ rm sig.tmp
 echo "Prepare for RSEM: sorting BAMs"
 
 #### prepare for RSEM: sort transcriptome BAM to ensure the order of the reads, to make RSEM output (not pme) deterministic
-mv $name.Aligned.toTranscriptome.out.bam Tr.bam 
+mv $NAME.Aligned.toTranscriptome.out.bam Tr.bam 
 
 
 # paired-end data, merge mates into one line before sorting, and un-merge after sorting
 # paired-end data, merge mates into one line before sorting, and un-merge after sorting
-echo "cat <( samtools view -H Tr.bam ) <( samtools view -@ $nThreadsRSEM Tr.bam | awk '{printf \"%s\", \$0 \" \"; getline; print}' | sort -S 60G -T ./ | tr ' ' '\n' ) | samtools view -@ $nThreadsRSEM -bS - > $name.Aligned.toTranscriptome.out.bam"
-cat <( samtools view -H Tr.bam ) <( samtools view -@ $nThreadsRSEM Tr.bam | awk '{printf "%s", \$0 " "; getline; print}' | sort -S 60G -T ./ | tr ' ' '\n' ) | samtools view -@ $nThreadsRSEM -bS - > $name.Aligned.toTranscriptome.out.bam
+echo "cat <( samtools view -H Tr.bam ) <( samtools view -@ $nThreadsRSEM Tr.bam | awk '{printf \"%s\", \$0 \" \"; getline; print}' | sort -S 60G -T ./ | tr ' ' '\n' ) | samtools view -@ $nThreadsRSEM -bS - > $NAME.Aligned.toTranscriptome.out.bam"
+cat <( samtools view -H Tr.bam ) <( samtools view -@ $nThreadsRSEM Tr.bam | awk '{printf "%s", \$0 " "; getline; print}' | sort -S 60G -T ./ | tr ' ' '\n' ) | samtools view -@ $nThreadsRSEM -bS - > $NAME.Aligned.toTranscriptome.out.bam
 'rm' Tr.bam
 
 ###### RSEM command
 echo "STARTING RSEM"
-echo $RSEM $RSEMparCommon $RSEMparRun $RSEMparType $name.Aligned.toTranscriptome.out.bam $RSEMrefDir $name >& $name.Log.rsem
-$RSEM $RSEMparCommon $RSEMparRun $RSEMparType $name.Aligned.toTranscriptome.out.bam $RSEMrefDir $name >& $name.Log.rsem
+echo $RSEM $RSEMparCommon $RSEMparRun $RSEMparType $NAME.Aligned.toTranscriptome.out.bam $RSEMrefDir $NAME >& $NAME.Log.rsem
+$RSEM $RSEMparCommon $RSEMparRun $RSEMparType $NAME.Aligned.toTranscriptome.out.bam $RSEMrefDir $NAME >& $NAME.Log.rsem
 
 ###### RSEM diagnostic plot creation
 # Notes:
 # 1. rsem-plot-model requires R (and the Rscript executable)
-# 2. This command produces the file $name.pdf, which contains multiple plots
+# 2. This command produces the file $NAME.pdf, which contains multiple plots
 echo "STARTING RSEM-plot-model"
-echo rsem-plot-model $name $name.pdf
-rsem-plot-model $name $name.pdf
+echo rsem-plot-model $NAME $NAME.pdf
+rsem-plot-model $NAME $NAME.pdf
 
 EOF
 # qsub then remove the tempscript
-sbatch $name.tempscript.sh 
+sbatch $NAME.tempscript.sh 
 sleep 1
-rm $name.tempscript.sh
+rm $NAME.tempscript.sh
