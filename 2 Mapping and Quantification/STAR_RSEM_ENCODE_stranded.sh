@@ -62,15 +62,18 @@ RSEMparType="--paired-end --forward-prob 0"
       
 ## put the STAR & RSEM commands here ##
 cat > $name.tempscript.sh << EOF
-#!/bin/bash
-#$ -j y
-#$ -cwd
-#$ -V
-#$ -l h_vmem=4G
-#$ -pe shm 12
-#$ -l h_rt=5:59:00
-#$ -l s_rt=5:59:00
-#$ -N $name.STAR_RSEM
+#!/bin/bash -l
+#SBATCH --job-name $NAME.STAR_RSEM
+#SBATCH --output=$NAME.STAR_RSEM.out
+#SBATCH --mail-user jchap14@stanford.edu
+#SBATCH --mail-type=ALL
+# Request run time & memory
+#SBATCH --time=5:59:00
+#SBATCH --mem=4G
+#SBATCH --nodes=1
+#SBATCH --ntasks-per-node=12
+#SBATCH --export=ALL
+#SBATCH --account=mpsnyder
 
 mkdir $name
 cd $name
@@ -148,6 +151,6 @@ rsem-plot-model $name $name.pdf
 
 EOF
 # qsub then remove the tempscript
-qsub $name.tempscript.sh 
+sbatch $name.tempscript.sh 
 sleep 1
 rm $name.tempscript.sh
