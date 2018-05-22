@@ -18,8 +18,8 @@ module add r
 module add ucsc_tools
 
 # STAR genome directory, RSEM reference directory - prepared with STAR_RSEM_prep.sh script
-STARgenomeDir="/home/jchap14/hi_quota_folder/Annotations/GENCODE-v19-GRCh37-hg19/STAR_genome_GRCh37_directory/"
-RSEMrefDir="/home/jchap14/hi_quota_folder/Annotations/GENCODE-v19-GRCh37-hg19/RSEM_genome_GRCh37_directory/GRCh37"
+STARgenomeDir="/srv/gsfs0/projects/snyder/chappell/Annotations/GENCODE-v19-GRCh37-hg19/STAR_genome_GRCh37_directory"
+RSEMrefDir="/srv/gsfs0/projects/snyder/chappell/Annotations/GENCODE-v19-GRCh37-hg19/RSEM_genome_GRCh37_directory/GRCh37"
 nThreadsSTAR="12" # number of threads for STAR
 nThreadsRSEM="12" # number of threads for RSEM
 
@@ -29,10 +29,12 @@ RSEM=rsem-calculate-expression
 bedGraphToBigWig=bedGraphToBigWig              
 
 # STAR parameters: common
-STARparCommon=" --genomeDir $STARgenomeDir  --readFilesIn ../$read1 ../$read2 --outFileNamePrefix $name. --outSAMunmapped Within --outFilterType BySJout \
- --outSAMattributes NH HI AS NM MD    --outFilterMultimapNmax 20   --outFilterMismatchNmax 999   \
- --outFilterMismatchNoverReadLmax 0.04   --alignIntronMin 20   --alignIntronMax 1000000   --alignMatesGapMax 1000000   \
- --alignSJoverhangMin 8   --alignSJDBoverhangMin 1 --sjdbScore 1 --readFilesCommand zcat"
+STARparCommon=" --genomeDir $STARgenomeDir  --readFilesIn ../$read1 ../$read2 \
+ --outFileNamePrefix $NAME --outSAMunmapped Within --outFilterType BySJout \
+ --outSAMattributes NH HI AS NM MD    --outFilterMultimapNmax 20 \
+ --outFilterMismatchNmax 999 --outFilterMismatchNoverReadLmax 0.04   --alignIntronMin 20 \
+ --alignIntronMax 1000000   --alignMatesGapMax 1000000 --alignSJoverhangMin 8 \
+ --alignSJDBoverhangMin 1 --sjdbScore 1 --readFilesCommand zcat"
 
 # STAR parameters: run-time, controlled by DCC
 STARparRun=" --runThreadN $nThreadsSTAR --genomeLoad LoadAndKeep  --limitBAMsortRAM 10000000000"
