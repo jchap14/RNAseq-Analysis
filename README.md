@@ -1,8 +1,5 @@
-# BAM_SAM_tools
-These scripts are for manipulating BAM/SAM files
+# RNAseq
+These scripts are for processing RNAseq data
 
 remove the old repo & clone the new one with: 
-> cd /srv/gsfs0/projects/snyder/chappell/scripts  
-> rm -rf BAM_SAM_tools  
-> git clone --recursive https://github.com/jchap14/BAM_SAM_tools     
-> chmod 777 ./BAM_SAM_tools/*     
+> WORKING_DIR=$(pwd); cd /srv/gsfs0/projects/snyder/chappell/scripts; rm -rf RNAseq-Analysis; git clone https://github.com/jchap14/RNAseq-Analysis; chmod 777 ./RNAseq-Analysis/*; cd "$WORKING_DIR"    
