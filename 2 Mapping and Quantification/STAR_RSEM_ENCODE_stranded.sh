@@ -71,7 +71,7 @@ cat > $NAME.tempscript.sh << EOF
 #SBATCH --mail-type=ALL
 # Request run time & memory
 #SBATCH --time=5:59:00
-#SBATCH --mem=4G
+#SBATCH --mem=10G
 #SBATCH --nodes=1
 #SBATCH --ntasks-per-node=12
 #SBATCH --export=ALL
