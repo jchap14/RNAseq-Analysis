@@ -23,9 +23,6 @@ RSEMrefDir="/srv/gsfs0/projects/snyder/chappell/Annotations/GENCODE-v19-GRCh37-h
 nThreadsSTAR="12" # number of threads for STAR
 nThreadsRSEM="12" # number of threads for RSEM
 
-# executables
-RSEM=rsem-calculate-expression
-      
 ## put the STAR & RSEM commands here ##
 cat > $NAME.tempscript.sh << EOF
 #!/bin/bash -l
@@ -100,7 +97,7 @@ cat <( samtools view -H Tr.bam ) <( samtools view -@ $nThreadsRSEM Tr.bam | awk 
 
 ###### RSEM command
 echo "STARTING RSEM"
-$RSEM --bam --estimate-rspd --no-bam-output --seed 12345 -p $nThreadsRSEM --paired-end \
+rsem-calculate-expression --bam --estimate-rspd --no-bam-output --seed 12345 -p $nThreadsRSEM --paired-end \
 --forward-prob 0 $NAME.Aligned.toTranscriptome.out.bam $RSEMrefDir $NAME >& $NAME.Log.rsem
 
 ###### RSEM diagnostic plot creation
