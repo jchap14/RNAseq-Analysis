@@ -12,10 +12,10 @@ read2=$NAME.trim.R2.fq.gz #gzipped fq file for read2, use "" if single-end
 
 ## add required modules
 module add STAR
-module add samtools
 module add rsem
-module add r
 module add ucsc_tools
+# module add samtools #in conda env
+# module add r #in conda env
 
 # STAR genome directory, RSEM reference directory - prepared with STAR_RSEM_prep.sh script
 STARgenomeDir="/srv/gsfs0/projects/snyder/chappell/Annotations/GENCODE-v19-GRCh37-hg19/STAR_genome_GRCh37_directory"
@@ -24,43 +24,7 @@ nThreadsSTAR="12" # number of threads for STAR
 nThreadsRSEM="12" # number of threads for RSEM
 
 # executables
-STAR=STAR                             
-RSEM=rsem-calculate-expression        
-bedGraphToBigWig=bedGraphToBigWig              
-
-# STAR parameters: common
-STARparCommon=" --genomeDir $STARgenomeDir  --readFilesIn ../$read1 ../$read2 \
- --outFileNamePrefix $NAME --outSAMunmapped Within --outFilterType BySJout \
- --outSAMattributes NH HI AS NM MD    --outFilterMultimapNmax 20 \
- --outFilterMismatchNmax 999 --outFilterMismatchNoverReadLmax 0.04   --alignIntronMin 20 \
- --alignIntronMax 1000000   --alignMatesGapMax 1000000 --alignSJoverhangMin 8 \
- --alignSJDBoverhangMin 1 --sjdbScore 1 --readFilesCommand zcat"
-
-# STAR parameters: run-time, controlled by DCC
-STARparRun=" --runThreadN $nThreadsSTAR --genomeLoad LoadAndKeep  --limitBAMsortRAM 10000000000"
-
-# STAR parameters: type of BAM output: quantification or sorted BAM or both
-#     OPTION: sorted BAM output
-## STARparBAM="--outSAMtype BAM SortedByCoordinate"
-#     OPTION: transcritomic BAM for quantification
-## STARparBAM="--outSAMtype None --quantMode TranscriptomeSAM"
-#     OPTION: both
-STARparBAM="--outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM"
-
-# STAR parameters: strandedness, affects bedGraph (wiggle) files and XS tag in BAM 
-#OPTION: stranded data
-STARparStrand=""
-STARparWig="--outWigStrand Stranded"
-
-# RSEM parameters: common
-RSEMparCommon="--bam --estimate-rspd --no-bam-output --seed 12345"
-
-# RSEM parameters: run-time, number of threads and RAM in MB
-RSEMparRun=" -p $nThreadsRSEM "
-
-# RSEM parameters:
-#OPTION: stranded paired end
-RSEMparType="--paired-end --forward-prob 0"
+RSEM=rsem-calculate-expression
       
 ## put the STAR & RSEM commands here ##
 cat > $NAME.tempscript.sh << EOF
@@ -80,27 +44,23 @@ cat > $NAME.tempscript.sh << EOF
 mkdir $NAME
 cd $NAME
 
-# output: all in the working directory, fixed names
-# Aligned.sortedByCoord.out.bam                 # alignments, standard sorted BAM, agreed upon formatting
-# Log.final.out                                 # mapping statistics to be used for QC, text, STAR formatting
-# Quant.genes.results                           # RSEM gene quantifications, tab separated text, RSEM formatting
-# Quant.isoforms.results                        # RSEM transcript quantifications, tab separated text, RSEM formatting
-# Quant.pdf                                     # RSEM diagnostic plots
-# Signal.{Unique,UniqueMultiple}.strand{+,-}.bw # 4 bigWig files for stranded data
-# Signal.{Unique,UniqueMultiple}.unstranded.bw  # 2 bigWig files for unstranded data
-
 ###### STAR command
 echo "STARTING STAR"
-echo $STAR $STARparCommon $STARparRun $STARparBAM $STARparStrand
-$STAR $STARparCommon $STARparRun $STARparBAM $STARparStrand
+STAR --genomeDir $STARgenomeDir  --readFilesIn ../$read1 ../$read2 \
+ --outFileNamePrefix $NAME. --outSAMunmapped Within --outFilterType BySJout \
+ --outSAMattributes NH HI AS NM MD    --outFilterMultimapNmax 20 \
+ --outFilterMismatchNmax 999 --outFilterMismatchNoverReadLmax 0.04   --alignIntronMin 20 \
+ --alignIntronMax 1000000   --alignMatesGapMax 1000000 --alignSJoverhangMin 8 \
+ --alignSJDBoverhangMin 1 --sjdbScore 1 --readFilesCommand zcat \
+ --runThreadN $nThreadsSTAR --genomeLoad LoadAndKeep  --limitBAMsortRAM 10000000000 \
+ --outSAMtype BAM SortedByCoordinate --quantMode TranscriptomeSAM  $STARparStrand
 
 ###### bedGraph generation, now decoupled from STAR alignment step
-# working subdirectory for this STAR run
 echo "STARTING STAR bedGraph generation"
 mkdir Signal
-
-echo $STAR --runMode inputAlignmentsFromBAM --inputBAMfile $NAME.Aligned.sortedByCoord.out.bam --outWigType bedGraph $STARparWig --outFileNamePrefix ./Signal/ --outWigReferencesPrefix chr
-$STAR --runMode inputAlignmentsFromBAM --inputBAMfile $NAME.Aligned.sortedByCoord.out.bam --outWigType bedGraph $STARparWig --outFileNamePrefix ./Signal/ --outWigReferencesPrefix chr
+$STAR --runMode inputAlignmentsFromBAM --inputBAMfile $NAME.Aligned.sortedByCoord.out.bam \
+--outWigType bedGraph --outWigStrand Stranded --outFileNamePrefix ./Signal/ \
+--outWigReferencesPrefix chr
 
 # move the signal files from the subdirectory
 echo "move the signal files from the subdirectory"
@@ -120,7 +80,7 @@ for imult in Unique UniqueMultiple
 do
 	grep ^chr Signal.\$imult.str\$istr.out.bg > sig.tmp
 	bedSort sig.tmp sig.tmp
-$bedGraphToBigWig sig.tmp  chrNL.txt Signal.\$imult.strand\${str[istr]}.bw
+bedGraphToBigWig sig.tmp  chrNL.txt Signal.\$imult.strand\${str[istr]}.bw
 done
 done
 rm sig.tmp
@@ -140,8 +100,8 @@ cat <( samtools view -H Tr.bam ) <( samtools view -@ $nThreadsRSEM Tr.bam | awk 
 
 ###### RSEM command
 echo "STARTING RSEM"
-echo $RSEM $RSEMparCommon $RSEMparRun $RSEMparType $NAME.Aligned.toTranscriptome.out.bam $RSEMrefDir $NAME >& $NAME.Log.rsem
-$RSEM $RSEMparCommon $RSEMparRun $RSEMparType $NAME.Aligned.toTranscriptome.out.bam $RSEMrefDir $NAME >& $NAME.Log.rsem
+$RSEM --bam --estimate-rspd --no-bam-output --seed 12345 -p $nThreadsRSEM --paired-end \
+--forward-prob 0 $NAME.Aligned.toTranscriptome.out.bam $RSEMrefDir $NAME >& $NAME.Log.rsem
 
 ###### RSEM diagnostic plot creation
 # Notes:
@@ -155,4 +115,4 @@ EOF
 # qsub then remove the tempscript
 sbatch $NAME.tempscript.sh 
 sleep 1
-rm $NAME.tempscript.sh
+# rm $NAME.tempscript.sh
