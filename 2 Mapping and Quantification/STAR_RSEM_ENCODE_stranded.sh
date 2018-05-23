@@ -3,7 +3,7 @@
 ##### STAR mapping / RSEM quantification pipeline #####
 
 ## run command:
-## for x in `find *.trim.R1.fq.gz; do bash STAR_RSEM_ENCODE_stranded.sh $x; done
+## for x in `find *.trim.R1.fq.gz`; do bash STAR_RSEM_ENCODE_stranded.sh $x; done
 
 ## set variable names
 read1=`echo $1` #gzipped fastq file for read1
@@ -38,6 +38,7 @@ cat > $NAME.tempscript.sh << EOF
 #SBATCH --export=ALL
 #SBATCH --account=mpsnyder
 
+echo "This sample is $NAME"
 mkdir $NAME
 cd $NAME
 
