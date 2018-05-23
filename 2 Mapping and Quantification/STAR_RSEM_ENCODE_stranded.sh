@@ -107,7 +107,7 @@ rsem-calculate-expression --bam --estimate-rspd --no-bam-output --seed 12345 -p 
 echo "STARTING RSEM-plot-model"
 echo rsem-plot-model $NAME $NAME.pdf
 rsem-plot-model $NAME $NAME.pdf
-
+echo "Done!"
 EOF
 # qsub then remove the tempscript
 sbatch $NAME.tempscript.sh 
