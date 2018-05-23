@@ -12,10 +12,10 @@ read2=$NAME.trim.R2.fq.gz #gzipped fq file for read2, use "" if single-end
 
 ## add required modules
 module add STAR
-module add rsem
 module add ucsc_tools
+# module add rsem     #in conda env
 # module add samtools #in conda env
-# module add r #in conda env
+# module add r        #in conda env
 
 # STAR genome directory, RSEM reference directory - prepared with STAR_RSEM_prep.sh script
 STARgenomeDir="/srv/gsfs0/projects/snyder/chappell/Annotations/GENCODE-v19-GRCh37-hg19/STAR_genome_GRCh37_directory"
