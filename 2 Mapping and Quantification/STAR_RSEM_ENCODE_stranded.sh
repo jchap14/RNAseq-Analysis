@@ -58,7 +58,7 @@ STAR --genomeDir $STARgenomeDir  --readFilesIn ../$read1 ../$read2 \
 ###### bedGraph generation, now decoupled from STAR alignment step
 echo "STARTING STAR bedGraph generation"
 mkdir Signal
-$STAR --runMode inputAlignmentsFromBAM --inputBAMfile $NAME.Aligned.sortedByCoord.out.bam \
+STAR --runMode inputAlignmentsFromBAM --inputBAMfile $NAME.Aligned.sortedByCoord.out.bam \
 --outWigType bedGraph --outWigStrand Stranded --outFileNamePrefix ./Signal/ \
 --outWigReferencesPrefix chr
 
@@ -115,4 +115,4 @@ EOF
 # qsub then remove the tempscript
 sbatch $NAME.tempscript.sh 
 sleep 1
-# rm $NAME.tempscript.sh
+rm $NAME.tempscript.sh
