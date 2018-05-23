@@ -38,7 +38,6 @@ cat > $NAME.tempscript.sh << EOF
 #SBATCH --export=ALL
 #SBATCH --account=mpsnyder
 
-echo "This sample is $NAME"
 mkdir $NAME
 cd $NAME
 
@@ -112,9 +111,9 @@ rsem-plot-model $NAME $NAME.pdf
 ##### Print either a success or failure message
 if [ -f $(echo $NAME.genes.results) ]
 then
-    echo "Generated .genes.results!"
+    echo "$NAME generated .genes.results!"
 else
-    echo "Failed to generate .genes.results!"
+    echo "$NAME failed to generate .genes.results!"
 fi
 echo "Done!"
 EOF
