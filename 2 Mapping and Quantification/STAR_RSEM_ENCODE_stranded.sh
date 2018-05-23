@@ -3,7 +3,7 @@
 ##### STAR mapping / RSEM quantification pipeline #####
 
 ## run command:
-## for x in `/bin/ls *.trim.R1.fq.gz` ; do bash STAR_RSEM_ENCODE_stranded.sh $x; done
+## for x in `find *.trim.R1.fq.gz; do bash STAR_RSEM_ENCODE_stranded.sh $x; done
 
 ## set variable names
 read1=`echo $1` #gzipped fastq file for read1
@@ -107,6 +107,14 @@ rsem-calculate-expression --bam --estimate-rspd --no-bam-output --seed 12345 -p 
 echo "STARTING RSEM-plot-model"
 echo rsem-plot-model $NAME $NAME.pdf
 rsem-plot-model $NAME $NAME.pdf
+
+##### Print either a success or failure message
+if [ -f $(echo $NAME.genes.results) ]
+then
+    echo "Generated .genes.results!"
+else
+    echo "Failed to generate .genes.results!"
+fi
 echo "Done!"
 EOF
 # qsub then remove the tempscript
